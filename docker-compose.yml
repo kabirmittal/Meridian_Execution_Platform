@@ -1,0 +1,41 @@
+# docker compose up --build
+# Dashboard → http://localhost:3000
+# Orchestrator API → http://localhost:8000
+# API docs → http://localhost:8000/docs
+
+version: "3.9"
+
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Run C++ demos (exit after completion)
+  core-demo:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.core
+    command: sh -c "./anomaly_demo && ./multi_pipeline_demo"
+    profiles: ["demo"]

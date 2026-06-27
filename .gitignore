@@ -1,0 +1,35 @@
+# ── Build artefacts ──────────────────────────────────────────────────────────
+core/build/
+core/build-debug/
+*.o *.a *.so
+compile_commands.json
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# ── Node / TypeScript ────────────────────────────────────────────────────────
+dashboard/node_modules/
+dashboard/dist/
+.DS_Store
+
+# ── IDE / editor ─────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+.docker/
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+*.log
+.env
+.env.local

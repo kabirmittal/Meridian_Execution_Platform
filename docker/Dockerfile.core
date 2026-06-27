@@ -1,0 +1,20 @@
+# ── Stage 1: build ─────────────────────────────────────────────────────────────
+FROM ubuntu:24.04 AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY core/ ./
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON \
+  && cmake --build build --parallel $(nproc)
+
+# ── Stage 2: runtime ───────────────────────────────────────────────────────────
+FROM ubuntu:24.04
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=builder /src/build/hello_meridian    ./
+COPY --from=builder /src/build/anomaly_demo      ./
+COPY --from=builder /src/build/multi_pipeline_demo ./
+CMD ["./hello_meridian"]
