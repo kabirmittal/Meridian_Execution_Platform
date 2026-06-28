@@ -245,27 +245,6 @@ meridian/
 └── scripts/demo.sh
 ```
 
----
-
-## Interview Defence Points
-
-**"Walk me through the architecture."**
-Three layers: C++ core handles high-frequency event processing with lock-free data structures and zero-allocation hot paths. Python orchestrator provides management APIs and runs the synthetic generator. React dashboard consumes the WebSocket stream for live visualisation. The Runtime abstraction means the same processor code runs in all three operational modes.
-
-**"How did you test this?"**
-40 C++ tests via GoogleTest (unit + integration). I use `SimRuntimeAPI` directly in tests — no mocking framework needed. I seed metrics, inject events, and assert on the captured effects vector. Deterministic replay means a recorded production event trace produces byte-identical output on every run. 11 Python API tests via pytest-asyncio.
-
-**"What's shadow mode good for?"**
-It's the dark-launch pattern used at Google and Meta. Before deploying a new processor algorithm, I replay yesterday's production traffic through the new code in shadow mode — effects are emitted and counted but handlers aren't called, so zero production impact. I compare the new algorithm's effect count against the old one, and only promote when they match expectations.
-
-**"How does the event bus work?"**
-Publish locks once to copy the subscriber list, then releases before calling handlers. This avoids deadlocks if a handler tries to subscribe, and keeps the critical section minimal. Published count uses `memory_order_relaxed` atomics — cheap on x86 since all writes are serialised, but the counter is only for observability, not synchronisation.
-
-**"Why C++20 specifically?"**
-`std::jthread` for cooperative cancellation without manual stop flags. `std::variant` + `if constexpr` for zero-overhead type discrimination. C++20 concepts constrain the `Processor` template parameter at compile time — the error fires at the call site, not inside deeply nested template instantiations. `std::transform_reduce` for vectorisation-friendly variance computation in the anomaly detector.
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
